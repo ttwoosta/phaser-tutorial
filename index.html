@@ -86,6 +86,9 @@
             repeat: -1
         });
 
+        // make the player standing on the platforms
+        this.physics.add.collider(player, platforms);
+
     }
 
     function update ()
