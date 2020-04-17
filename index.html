@@ -36,6 +36,8 @@
     var platforms;
     var cursors;
     var player;
+    var score = 0;
+    var scoreText;
 
     function preload ()
     {
@@ -52,6 +54,9 @@
     function collectStar (player, star)
     {
         star.disableBody(true, true);
+
+        score += 10;
+        scoreText.setText('Score: ' + score);
     }
 
     function create ()
@@ -113,6 +118,9 @@
 
         // check to see if the player overlaps with a star
         this.physics.add.overlap(player, stars, collectStar, null, this);
+
+        // add a Score label
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
     }
 
     function update ()
