@@ -38,6 +38,7 @@
     var player;
     var score = 0;
     var scoreText;
+    var bombs;
 
     function preload ()
     {
@@ -47,23 +48,28 @@
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/dude.png',
             { frameWidth: 32, frameHeight: 48 });
-
-        
     }
 
-    function collectStar (player, star)
-    {
-        star.disableBody(true, true);
+    function addStars(scene, x, y, stepX, stepY) {
+        var starGroup = scene.physics.add.staticGroup({
+            key: 'star',
+            repeat: 2,
+            setXY: { x: x, y: y, stepX: stepX, stepY: stepY }
+        });
 
-        score += 10;
-        scoreText.setText('Score: ' + score);
+        starGroup.children.iterate(function (child) {
+            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+            child.starGroup = starGroup;
+        });
+
+        // check to see if the player overlaps with a star
+        scene.physics.add.overlap(player, starGroup, onCollectStar, null, scene);
     }
 
     function create ()
     {
         this.add.image(400, 300, 'sky');
-        this.add.image(400, 300, 'star');   
-        
+                
         platforms = this.physics.add.staticGroup();
         platforms.create(400, 568, 'ground').setScale(2).refreshBody();
         platforms.create(600, 400, 'ground');
@@ -104,28 +110,31 @@
         // handle keyboard events
         cursors = this.input.keyboard.createCursorKeys();
 
-        var stars = this.physics.add.group({
-            key: 'star',
-            repeat: 11,
-            setXY: { x: 12, y: 0, stepX: 70 }
-        });
 
-        stars.children.iterate(function (child) {
-            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-        });
-
-        this.physics.add.collider(stars, platforms);
-
-        // check to see if the player overlaps with a star
-        this.physics.add.overlap(player, stars, collectStar, null, this);
+        addStars(this, 300, 300, 35, -35);
+        addStars(this, 500, 100, 35, 35);
 
         // add a Score label
         scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+
+        // setup bombs
+        bombs = this.physics.add.group({
+            key: 'bomb',
+            repeat: 4,
+            scale: 2,
+            setXY: { x: 130, y: 0, stepX: 80 }
+        });
+
+        bombs.children.iterate(function(bomb) {
+            bomb.setScale(1.0);
+        });
+
+        this.physics.add.collider(bombs, platforms);
+        this.physics.add.collider(player, bombs, onHitBomb, null, this);
     }
 
     function update ()
     {
-
         if (cursors.left.isDown) {
             player.setVelocityX(-160);
             player.anims.play('left', true);
@@ -141,6 +150,36 @@
 
         if (cursors.up.isDown && player.body.touching.down) {
             player.setVelocityY(-330);
+        }
+    }
+
+    function onHitBomb(player, bomb) {
+        this.physics.pause();
+        player.setTint(0xff0000);
+        player.anims.play('turn');
+        gameOver = true;
+    }
+
+    function onCollectStar(player, star)
+    {
+        star.disableBody(true, true);
+        var starGroup = star.starGroup;
+
+        score += 10;
+        scoreText.setText('Score: ' + score);
+
+        if (starGroup.countActive(true) === 0)
+        {
+            starGroup.children.iterate(function (child) {
+                child.enableBody(true, child.x, 0, true, true);
+            });
+
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            var bomb = bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
         }
     }
 
