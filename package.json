@@ -4,7 +4,8 @@
   "description": "Phaser 3 Tutorial",
   "main": "index.html",
   "scripts": {
-    "start": "./node_modules/.bin/http-server -p 8888 -o http://localhost:8888/index.html"
+    "test": "./node_modules/.bin/http-server -p 8888 -o http://localhost:8888/index.html",
+    "start": "node index.html"
   },
   "devDependencies": {
     "http-server": "^0.11.1"
