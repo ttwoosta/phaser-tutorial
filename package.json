@@ -12,7 +12,7 @@
   "dependencies": {
     "ecstatic": "^4.1.4",
     "ejs": "^3.0.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "heroku": "^7.39.3",
     "phaser": "^3.22.0"
   }
